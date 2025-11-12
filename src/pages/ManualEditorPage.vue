@@ -12,8 +12,15 @@
         <div class="col-12 col-md-6">
           <q-input v-model="name" label="名称" />
         </div>
+      </div>
+      <div class="row q-col-gutter-sm q-mt-sm">
         <div class="col-12 col-md-6">
-          <q-input v-model="description" label="描述" />
+          <div class="monaco-wrap">
+            <MonacoEditor :value="description || ''" @update:value="(v: string) => (description = v)" lang="html" :options="monacoHtmlOptions" />
+          </div>
+        </div>
+        <div class="col-12 col-md-6">
+          <q-editor :model-value="description || ''" @update:model-value="(v: string) => (description = v)" height="150px" />
         </div>
       </div>
     </q-form>
@@ -23,7 +30,16 @@
       <q-item v-for="s in steps" :key="s.id">
         <q-item-section>
           <q-input v-model="s.title" label="标题" />
-          <q-editor v-model="s.content" height="150px" />
+          <div class="row q-col-gutter-sm q-mt-sm">
+            <div class="col-12 col-md-6">
+              <div class="monaco-wrap">
+                <MonacoEditor v-model:value="s.content" lang="html" :options="monacoHtmlOptions" />
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <q-editor v-model="s.content" height="150px" />
+            </div>
+          </div>
           <div class="row items-center q-gutter-sm q-mt-sm">
             <q-select v-model="newToolType" :options="toolOptions" label="绑定小工具" />
             <q-btn dense @click="addTool(s.id)" label="添加" />
@@ -73,7 +89,12 @@
                   </div>
                   <div class="col-12" v-if="(tb.config as any).mode === 'js'">
                     <div class="monaco-wrap">
-                      <MonacoEditor v-model:value="(tb.config as any).code" lang="javascript" />
+                      <MonacoEditor
+                        v-model:value="(tb.config as any).code"
+                        lang="javascript"
+                        :beforeMount="setupJsMonaco"
+                        :options="monacoJsOptions"
+                      />
                     </div>
                   </div>
                   <div class="col-12 q-mt-sm">
@@ -112,7 +133,21 @@
                   <q-toggle v-model="td.done" label="完成" />
                 </div>
                 <div class="col-12">
-                  <q-input v-model="td.description" type="textarea" autogrow label="描述" />
+                  <div class="row q-col-gutter-sm">
+                    <div class="col-12 col-md-6">
+                      <div class="monaco-wrap">
+                        <MonacoEditor
+                          :value="td.description || ''"
+                          @update:value="(v: string) => (td.description = v)"
+                          lang="html"
+                          :options="monacoHtmlOptions"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <q-editor :model-value="td.description || ''" @update:model-value="(v: string) => (td.description = v)" height="150px" />
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="row items-center q-gutter-sm q-mt-sm">
@@ -197,7 +232,12 @@
                     </div>
                     <div class="col-12" v-if="(tb.config as any).mode === 'js'">
                       <div class="monaco-wrap">
-                        <MonacoEditor v-model:value="(tb.config as any).code" lang="javascript" />
+                        <MonacoEditor
+                          v-model:value="(tb.config as any).code"
+                          lang="javascript"
+                          :beforeMount="setupJsMonaco"
+                          :options="monacoJsOptions"
+                        />
                       </div>
                     </div>
                     <div class="col-12 q-mt-sm">
@@ -250,6 +290,7 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
 import MonacoEditor from '@guolao/vue-monaco-editor';
+import type * as monaco from 'monaco-editor';
 import { useRoute, useRouter } from 'vue-router';
 import { useManualStore } from 'src/stores/manual-store';
 import type { ToolType } from 'src/models/manual';
@@ -269,6 +310,40 @@ const formulaParamsText = ref<Record<string, string>>({});
 const newTodoText = ref('');
 const newTodoToolType = ref<Record<string, ToolType | null>>({});
 const formulaTestResult = ref<Record<string, string>>({});
+
+const monacoJsOptions: monaco.editor.IStandaloneEditorConstructionOptions = {
+  automaticLayout: true,
+  minimap: { enabled: false },
+  wordWrap: 'on',
+  fontSize: 14,
+  quickSuggestions: true,
+  suggestOnTriggerCharacters: true,
+};
+function setupJsMonaco(m: typeof monaco) {
+  try {
+    m.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+      noSemanticValidation: false,
+      noSyntaxValidation: false,
+    });
+    m.languages.typescript.javascriptDefaults.setCompilerOptions({
+      allowNonTsExtensions: true,
+      checkJs: true,
+      module: m.languages.typescript.ModuleKind.ESNext,
+      target: m.languages.typescript.ScriptTarget.ES2020,
+    });
+    m.languages.typescript.javascriptDefaults.addExtraLib(
+      'declare const params: Record<string, number>;\ndeclare let out: number;',
+    );
+  } catch (err) {
+    void err;
+  }
+}
+const monacoHtmlOptions: monaco.editor.IStandaloneEditorConstructionOptions = {
+  automaticLayout: true,
+  minimap: { enabled: false },
+  wordWrap: 'on',
+  fontSize: 14,
+};
 
 onMounted(() => {
   manualStore.load();

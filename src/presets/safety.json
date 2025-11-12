@@ -1,0 +1,26 @@
+{
+  "id": "preset-safety",
+  "name": "安全检查示例",
+  "description": "运行前安全检查",
+  "tags": ["preset"],
+  "steps": [
+    {
+      "id": "preset-safety-1",
+      "title": "个人防护",
+      "content": "<ul><li>穿戴护具</li><li>清理台面</li></ul>",
+      "toolBindings": [],
+      "todos": [
+        { "id": "preset-safety-t1", "title": "确认已穿戴护具", "description": "", "done": false }
+      ]
+    },
+    {
+      "id": "preset-safety-2",
+      "title": "设备自检",
+      "content": "<p>检查设备状态，确保电源指示正常。</p>",
+      "toolBindings": [
+        { "id": "preset-safety-timer", "type": "timer", "config": { "mode": "stopwatch", "seconds": 60 } }
+      ],
+      "todos": []
+    }
+  ]
+}

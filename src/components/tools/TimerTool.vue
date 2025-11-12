@@ -152,7 +152,6 @@ function start() {
     } else {
       elapsed.value += 1;
       if (elapsed.value >= seconds.value) {
-        if (props.ownerId) run.setConfirmed(props.ownerId, true);
         startAlarm();
         finish();
       }

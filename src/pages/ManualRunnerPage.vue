@@ -2,7 +2,10 @@
   <q-page padding>
     <div class="row items-center justify-between q-mb-md">
       <div class="text-h6">运行说明书</div>
-      <div class="text-caption">步骤 {{ progress.index + 1 }}/{{ progress.total }}</div>
+      <div class="row items-center">
+        <div class="text-caption">步骤 {{ progress.index + 1 }}/{{ progress.total }}</div>
+        <q-btn flat dense color="negative" class="q-ml-sm" label="清空完成状态" @click="clearConfirmations" />
+      </div>
     </div>
     <q-stepper v-model="blockIndex" flat color="primary" animated>
       <q-step v-for="(blk, idx) in blocks" :key="idx" :name="idx" :title="blockTitle(blk)">
@@ -24,13 +27,13 @@
                     <div class="text-caption" v-html="renderContent(td.description || '')"></div>
                   </div>
                   <div class="col-auto">
-                    <q-checkbox v-model="todoStates[td.id]" label="完成" />
+                    <q-checkbox :model-value="isConfirmed(td.id)" label="完成" @update:model-value="(v) => setConfirmed(td.id, !!v)" />
                     <q-btn
                       flat
                       dense
                       color="secondary"
                       @click="confirmTodo(td.id)"
-                      :disable="!todoStates[td.id]"
+                      :disable="!isConfirmed(td.id)"
                       >确认</q-btn
                     >
                   </div>
@@ -48,7 +51,12 @@
       </q-step>
       <template #navigation>
         <q-stepper-navigation>
-          <q-btn color="primary" @click="next" :disable="isLast || !canNext">下一步</q-btn>
+          <q-btn
+            color="primary"
+            @click="next"
+            :disable="isLast || (!canNext && !ctrlPressed)"
+            >下一步</q-btn
+          >
           <q-btn flat @click="prev" class="q-ml-sm" :disable="isFirst">上一步</q-btn>
           <q-btn flat @click="backHome" class="q-ml-sm">返回首页</q-btn>
         </q-stepper-navigation>
@@ -58,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed, ref, watch } from 'vue';
+import { onMounted, onBeforeUnmount, computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useManualStore } from 'src/stores/manual-store';
 import { useRunStore } from 'src/stores/run-store';
@@ -73,6 +81,13 @@ onMounted(() => {
   manualStore.load();
   const id = String(route.params.id);
   run.start(id, 0);
+  window.addEventListener('keydown', onKeyDown);
+  window.addEventListener('keyup', onKeyUp);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onKeyDown);
+  window.removeEventListener('keyup', onKeyUp);
 });
 
 const steps = computed(() => run.steps);
@@ -100,7 +115,6 @@ function blockTitle(blk: { start: number; size: number }) {
   return list.map((s) => s.title).join(' | ');
 }
 
-const todoStates = ref<Record<string, boolean>>({});
 function confirmTodo(todoId: string) {
   run.setConfirmed(todoId, true);
 }
@@ -118,8 +132,16 @@ const canNext = computed(() => {
   return true;
 });
 
+const ctrlPressed = ref(false);
+function onKeyDown(e: KeyboardEvent) {
+  if (e.key === 'Control') ctrlPressed.value = true;
+}
+function onKeyUp(e: KeyboardEvent) {
+  if (e.key === 'Control') ctrlPressed.value = false;
+}
 function next() {
-  run.next();
+  if (isLast.value) return;
+  if (ctrlPressed.value || canNext.value) run.next();
 }
 
 function prev() {
@@ -136,5 +158,17 @@ function renderContent(text: string) {
     const v = run.getRef(name);
     return typeof v === 'number' ? String(v) : `@${name}`;
   });
+}
+
+function isConfirmed(id: string) {
+  return run.isConfirmed(id);
+}
+
+function setConfirmed(id: string, v: boolean) {
+  run.setConfirmed(id, v);
+}
+
+function clearConfirmations() {
+  run.clearConfirmations();
 }
 </script>

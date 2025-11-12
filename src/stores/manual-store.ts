@@ -1,34 +1,16 @@
 import { defineStore, acceptHMRUpdate } from 'pinia';
 import { loadManuals, saveManuals } from 'src/utils/storage';
 import type { Manual, Step, ToolBinding, ToolType, StepTodo } from 'src/models/manual';
-const PRESET_MANUALS: Manual[] = [
-  {
-    id: 'preset-safety',
-    name: '安全检查示例',
-    description: '运行前安全检查',
-    tags: ['preset'],
-    steps: [
-      {
-        id: 'preset-safety-1',
-        title: '个人防护',
-        content: '<ul><li>穿戴护具</li><li>清理台面</li></ul>',
-        toolBindings: [],
-        todos: [
-          { id: 'preset-safety-t1', title: '确认已穿戴护具', description: '', done: false },
-        ],
-      },
-      {
-        id: 'preset-safety-2',
-        title: '设备自检',
-        content: '<p>检查设备状态，确保电源指示正常。</p>',
-        toolBindings: [
-          { id: 'preset-safety-timer', type: 'timer', config: { mode: 'stopwatch', seconds: 60 } },
-        ],
-        todos: [],
-      },
-    ],
-  },
-];
+const presetModules = import.meta.glob<string>('../presets/*.json', { eager: true, query: '?raw', import: 'default' });
+const FILE_PRESETS: Manual[] = Object.values(presetModules)
+  .map((txt) => {
+    try {
+      return JSON.parse(txt) as Manual;
+    } catch {
+      return null;
+    }
+  })
+  .filter((m): m is Manual => !!m);
 
 export const useManualStore = defineStore('manual', {
   state: () => ({
@@ -43,7 +25,7 @@ export const useManualStore = defineStore('manual', {
       if (this.loaded) return;
       const data = loadManuals<Manual[]>();
       if (data && Array.isArray(data)) this.manuals = data;
-      for (const m of PRESET_MANUALS) {
+      for (const m of FILE_PRESETS) {
         const exist = this.manuals.find((x) => x.id === m.id);
         if (!exist) this.manuals.push(structuredClone(m));
       }

@@ -86,6 +86,9 @@ export const useRunStore = defineStore('run', {
     setConfirmed(stepId: string, v: boolean) {
       this.confirmations[stepId] = v;
     },
+    clearConfirmations() {
+      this.confirmations = {};
+    },
     isConfirmed(stepId: string): boolean {
       return !!this.confirmations[stepId];
     },

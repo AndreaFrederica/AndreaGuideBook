@@ -19,7 +19,12 @@
           <q-btn flat color="secondary" @click="run(m.id)" :disable="m.steps.length === 0"
             >运行</q-btn
           >
-          <q-btn flat color="negative" @click="remove(m.id)">删除</q-btn>
+          <q-btn
+            flat
+            color="negative"
+            @click="confirmRemove(m)"
+            :disable="(m.tags || []).includes('preset')"
+          >删除</q-btn>
           <q-btn flat color="secondary" @click="exportOne(m.id)">导出</q-btn>
         </q-item-section>
       </q-item>
@@ -33,6 +38,18 @@
         <q-card-actions align="right">
           <q-btn flat label="取消" v-close-popup />
           <q-btn color="primary" label="导入" @click="doImport" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+    <q-dialog v-model="showDelete">
+      <q-card style="min-width: 360px">
+        <q-card-section class="text-h6">删除说明书</q-card-section>
+        <q-card-section>
+          确认删除：{{ deleteTargetName }}？此操作不可恢复。
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="取消" v-close-popup />
+          <q-btn color="negative" label="删除" @click="doRemove" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -54,6 +71,9 @@ onMounted(() => {
 const manuals = computed(() => manualStore.manuals);
 const showImport = ref(false);
 const importFile = ref<File | null>(null);
+const showDelete = ref(false);
+const deleteTargetId = ref<string | null>(null);
+const deleteTargetName = ref<string>('');
 
 function create() {
   const id = manualStore.createManual({ name: '新的说明书' });
@@ -68,8 +88,19 @@ function run(id: string) {
   void router.push(`/manuals/${id}/run`);
 }
 
-function remove(id: string) {
-  manualStore.removeManual(id);
+function confirmRemove(m: { id: string; name: string; tags?: string[] }) {
+  if ((m.tags || []).includes('preset')) return;
+  deleteTargetId.value = m.id;
+  deleteTargetName.value = m.name || '';
+  showDelete.value = true;
+}
+
+function doRemove() {
+  if (!deleteTargetId.value) return;
+  manualStore.removeManual(deleteTargetId.value);
+  showDelete.value = false;
+  deleteTargetId.value = null;
+  deleteTargetName.value = '';
 }
 
 function exportAll() {
