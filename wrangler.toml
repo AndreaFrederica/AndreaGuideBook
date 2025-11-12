@@ -1,7 +1,7 @@
 # wrangler.toml
 name = 'guide-book'
 main = "workers/worker.js"
-compatibility_date = "2025-11-13"
+compatibility_date = "2025-11-12"
 workers_dev = false
 
 assets = { directory = "dist/spa", binding = "ASSETS" }
