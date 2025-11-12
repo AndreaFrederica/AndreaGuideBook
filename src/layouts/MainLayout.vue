@@ -6,7 +6,7 @@
 
         <q-toolbar-title> Quasar App </q-toolbar-title>
 
-        <div>Quasar v{{ $q.version }}</div>
+        <q-btn flat dense icon="widgets" @click="toggleRightDrawer" />
       </q-toolbar>
     </q-header>
 
@@ -15,6 +15,18 @@
         <q-item-label header> Essential Links </q-item-label>
 
         <EssentialLink v-for="link in linksList" :key="link.title" v-bind="link" />
+      </q-list>
+    </q-drawer>
+
+    <q-drawer v-model="rightDrawerOpen" side="right" bordered>
+      <q-list>
+        <q-item-label header>常驻工具</q-item-label>
+        <div class="q-pa-sm">
+          <TimerTool :binding="{ id: 'dock-timer', type: 'timer', config: {} }" />
+          <div class="q-mt-md">
+            <CalculatorTool :binding="{ id: 'dock-calc', type: 'calculator', config: {} }" />
+          </div>
+        </div>
       </q-list>
     </q-drawer>
 
@@ -27,6 +39,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import EssentialLink, { type EssentialLinkProps } from 'components/EssentialLink.vue';
+import TimerTool from 'components/tools/TimerTool.vue';
+import CalculatorTool from 'components/tools/CalculatorTool.vue';
 
 const linksList: EssentialLinkProps[] = [
   {
@@ -74,8 +88,13 @@ const linksList: EssentialLinkProps[] = [
 ];
 
 const leftDrawerOpen = ref(false);
+const rightDrawerOpen = ref(false);
 
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value;
+}
+
+function toggleRightDrawer() {
+  rightDrawerOpen.value = !rightDrawerOpen.value;
 }
 </script>
