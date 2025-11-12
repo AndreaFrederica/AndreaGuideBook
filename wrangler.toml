@@ -7,5 +7,5 @@ workers_dev = false
 assets = { directory = "dist/spa", binding = "ASSETS" }
 
 routes = [
-  "guides.sirrus.cc/*"
+  "guides.sirrus.cc"
 ]
