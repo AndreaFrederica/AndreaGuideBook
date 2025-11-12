@@ -6,6 +6,6 @@ workers_dev = false
 
 assets = { directory = "dist/spa", binding = "ASSETS" }
 
-routes = [
-  "guides.sirrus.cc"
-]
+[[routes]]
+pattern = "guides.sirrus.cc"
+custom_domain = true
