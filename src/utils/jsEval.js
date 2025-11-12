@@ -1,11 +1,12 @@
-export function runJS(code, vars, outputName) {
+export function runJS(code, vars, outputName, paramsObj) {
   const names = Object.keys(vars || {});
   const values = names.map((k) => vars[k]);
+  const argList = [...names, 'params'].join(',');
   const src = `
-    return (function(${names.join(',')}){
+    return (function(${argList}){
       ${code}
       return typeof ${outputName} !== 'undefined' ? ${outputName} : undefined;
     })`;
   const fn = new Function(src)();
-  return fn(...values);
+  return fn(...values, paramsObj && typeof paramsObj === 'object' ? paramsObj : {});
 }

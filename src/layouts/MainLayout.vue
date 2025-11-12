@@ -4,17 +4,33 @@
       <q-toolbar>
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
 
-        <q-toolbar-title> Quasar App </q-toolbar-title>
+        <q-toolbar-title> Andrea Guidebooks Online </q-toolbar-title>
 
         <q-btn flat dense icon="widgets" @click="toggleRightDrawer" />
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
+    <q-drawer v-model="leftDrawerOpen" bordered>
       <q-list>
-        <q-item-label header> Essential Links </q-item-label>
-
-        <EssentialLink v-for="link in linksList" :key="link.title" v-bind="link" />
+        <q-item clickable to="/home">
+          <q-item-section>
+            <q-item-label>主页</q-item-label>
+            <q-item-label caption>Home</q-item-label>
+          </q-item-section>
+        </q-item>
+        <q-item clickable to="/manuals">
+          <q-item-section>
+            <q-item-label>说明书合集</q-item-label>
+            <q-item-label caption>Manuals</q-item-label>
+          </q-item-section>
+        </q-item>
+        <q-separator spaced />
+        <EssentialLink
+          :title="'Blog'"
+          :caption="'blog.sirrus.cc'"
+          :icon="'rss_feed'"
+          :link="'https://blog.sirrus.cc'"
+        />
       </q-list>
     </q-drawer>
 
@@ -38,54 +54,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import EssentialLink, { type EssentialLinkProps } from 'components/EssentialLink.vue';
+import EssentialLink from 'components/EssentialLink.vue';
 import TimerTool from 'components/tools/TimerTool.vue';
 import CalculatorTool from 'components/tools/CalculatorTool.vue';
-
-const linksList: EssentialLinkProps[] = [
-  {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev',
-  },
-  {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework',
-  },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev',
-  },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev',
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev',
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev',
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev',
-  },
-];
 
 const leftDrawerOpen = ref(false);
 const rightDrawerOpen = ref(false);

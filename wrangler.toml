@@ -1,0 +1,10 @@
+name = "libguidebook"
+main = "workers/worker.js"
+compatibility_date = "2025-11-13"
+workers_dev = false
+
+assets = { directory = "dist/spa", binding = "ASSETS" }
+
+routes = [
+  "guides.sirrus.cc/*"
+]

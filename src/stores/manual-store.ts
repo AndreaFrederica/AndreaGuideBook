@@ -1,6 +1,34 @@
 import { defineStore, acceptHMRUpdate } from 'pinia';
 import { loadManuals, saveManuals } from 'src/utils/storage';
 import type { Manual, Step, ToolBinding, ToolType, StepTodo } from 'src/models/manual';
+const PRESET_MANUALS: Manual[] = [
+  {
+    id: 'preset-safety',
+    name: '安全检查示例',
+    description: '运行前安全检查',
+    tags: ['preset'],
+    steps: [
+      {
+        id: 'preset-safety-1',
+        title: '个人防护',
+        content: '<ul><li>穿戴护具</li><li>清理台面</li></ul>',
+        toolBindings: [],
+        todos: [
+          { id: 'preset-safety-t1', title: '确认已穿戴护具', description: '', done: false },
+        ],
+      },
+      {
+        id: 'preset-safety-2',
+        title: '设备自检',
+        content: '<p>检查设备状态，确保电源指示正常。</p>',
+        toolBindings: [
+          { id: 'preset-safety-timer', type: 'timer', config: { mode: 'stopwatch', seconds: 60 } },
+        ],
+        todos: [],
+      },
+    ],
+  },
+];
 
 export const useManualStore = defineStore('manual', {
   state: () => ({
@@ -15,6 +43,10 @@ export const useManualStore = defineStore('manual', {
       if (this.loaded) return;
       const data = loadManuals<Manual[]>();
       if (data && Array.isArray(data)) this.manuals = data;
+      for (const m of PRESET_MANUALS) {
+        const exist = this.manuals.find((x) => x.id === m.id);
+        if (!exist) this.manuals.push(structuredClone(m));
+      }
       this.loaded = true;
     },
     save() {
@@ -39,6 +71,8 @@ export const useManualStore = defineStore('manual', {
       this.save();
     },
     removeManual(id: string) {
+      const target = this.manuals.find((m) => m.id === id);
+      if (target && target.tags.includes('preset')) return;
       this.manuals = this.manuals.filter((m) => m.id !== id);
       this.save();
     },

@@ -367,7 +367,7 @@ function testFormula(tb: ToolBinding) {
   try {
     let val: number | undefined;
     if (cfg.mode === 'js') {
-      const out = runJS(cfg.code || '', values, cfg.output || 'out');
+      const out = runJS(cfg.code || '', values, cfg.output || 'out', values);
       if (typeof out === 'number') val = out as number;
     } else {
       let expr = cfg.expression || '';
@@ -378,8 +378,24 @@ function testFormula(tb: ToolBinding) {
       }
       val = evaluateExpression(expr);
     }
-    formulaTestResult.value[tb.id] = val !== undefined ? String(val) : '错误';
-  } catch {
+    const outVal = val !== undefined ? val : Number.NaN;
+    if (Number.isNaN(outVal)) {
+      if (cfg.mode === 'js') {
+        console.error('JS formula test produced invalid result', {
+          code: cfg.code || '',
+          values,
+          output: cfg.output || 'out',
+        });
+      } else {
+        console.error('Formula expression test produced NaN', {
+          expression: cfg.expression || '',
+          values,
+        });
+      }
+    }
+    formulaTestResult.value[tb.id] = Number.isNaN(outVal) ? '错误' : String(outVal);
+  } catch (err) {
+    console.error('Formula test error', err);
     formulaTestResult.value[tb.id] = '错误';
   }
 }

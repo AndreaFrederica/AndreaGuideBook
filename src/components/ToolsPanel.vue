@@ -1,7 +1,7 @@
 <template>
   <div>
     <div v-for="binding in bindings" :key="binding.id" class="q-mb-md">
-      <div v-if="desc(binding)" class="q-mb-xs text-caption">{{ desc(binding) }}</div>
+      <div v-if="desc(binding)" class="q-mb-xs text-caption" v-html="desc(binding)"></div>
       <div class="q-mb-xs">
         <q-checkbox
           :model-value="isConfirmed(binding.id)"

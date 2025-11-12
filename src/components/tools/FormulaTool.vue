@@ -57,17 +57,23 @@ type FormulaConfig = {
 };
 const cfg = props.binding.config as FormulaConfig | undefined;
 const expression = ref(String(cfg?.expression || 'a+b'));
-const params = ref<string[]>(cfg?.params || ['a', 'b']);
+const params = ref<string[]>(cfg?.params ?? (cfg?.mode === 'expr' ? ['a', 'b'] : []));
 const values = ref<Record<string, number>>({});
 const result = ref('');
 const mode = ref<'expr' | 'js'>(cfg?.mode || 'expr');
-const code = ref<string>(cfg?.code || '/* 在此编写JS，设置输出变量 */\nconst out = a + b;');
+const code = ref<string>(cfg?.code || '/* 在此编写JS，可使用 params 对象 */\nconst rpm = params.rpm ?? 12000;\nconst r = params.r_cm ?? 7.5;\nconst out = Math.round(1.118e-5 * r * rpm * rpm);');
 const outputName = ref<string>(cfg?.output || 'out');
 const autoRun = ref<boolean>((cfg as { autoRun?: boolean } | undefined)?.autoRun || false);
 
 onMounted(() => {
   const defs = cfg?.defaults || {};
-  for (const p of params.value) values.value[p] = typeof defs[p] === 'number' ? defs[p] : 0;
+  if (params.value.length === 0) {
+    for (const k of Object.keys(defs)) {
+      if (typeof defs[k] === 'number') values.value[k] = defs[k] as number;
+    }
+  } else {
+    for (const p of params.value) values.value[p] = typeof defs[p] === 'number' ? defs[p] : 0;
+  }
   const s = props.state as { values?: Record<string, number>; result?: string } | undefined;
   if (s?.values) values.value = s.values;
   if (s?.result) result.value = s.result;
@@ -99,15 +105,30 @@ function compute() {
       }
       val = evaluateExpression(expr);
     } else {
-      const out = runJS(code.value, values.value, outputName.value);
+      const out = runJS(code.value, values.value, outputName.value, values.value);
       if (typeof out === 'number') val = out as number;
     }
     const outVal = val !== undefined ? val : Number.NaN;
     result.value = Number.isNaN(outVal) ? '错误' : String(outVal);
+    if (Number.isNaN(outVal)) {
+      if (mode.value === 'expr') {
+        console.error('Formula expression produced NaN', {
+          expression: expression.value,
+          values: values.value,
+        });
+      } else {
+        console.error('JS formula produced invalid result', {
+          code: code.value,
+          values: values.value,
+          output: outputName.value,
+        });
+      }
+    }
     emit('change', { values: values.value, result: outVal });
     if (!Number.isNaN(outVal) && props.ownerId) run.setConfirmed(props.ownerId, true);
-  } catch {
+  } catch (err) {
     result.value = '错误';
+    console.error('Formula compute error', err);
     emit('change', { values: values.value, result: Number.NaN });
   }
 }

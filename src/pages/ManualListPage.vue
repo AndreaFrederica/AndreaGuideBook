@@ -1,7 +1,7 @@
 <template>
   <q-page padding>
     <div class="row items-center justify-between q-mb-md">
-      <div class="text-h6">实验室操作说明书</div>
+      <div class="text-h6">操作说明书</div>
       <div class="row q-gutter-sm">
         <q-btn color="primary" @click="create">新建说明书</q-btn>
         <q-btn color="secondary" @click="exportAll">导出全部</q-btn>
@@ -16,7 +16,9 @@
         </q-item-section>
         <q-item-section side class="row q-gutter-sm">
           <q-btn flat color="primary" @click="edit(m.id)">编辑</q-btn>
-          <q-btn flat color="secondary" @click="run(m.id)" :disable="m.steps.length===0">运行</q-btn>
+          <q-btn flat color="secondary" @click="run(m.id)" :disable="m.steps.length === 0"
+            >运行</q-btn
+          >
           <q-btn flat color="negative" @click="remove(m.id)">删除</q-btn>
           <q-btn flat color="secondary" @click="exportOne(m.id)">导出</q-btn>
         </q-item-section>
@@ -101,6 +103,8 @@ async function doImport() {
     manualStore.importAll(data);
     showImport.value = false;
     importFile.value = null;
-  } catch (e) { void e }
+  } catch (e) {
+    void e;
+  }
 }
 </script>

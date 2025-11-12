@@ -21,7 +21,7 @@
                 <div class="row items-center q-gutter-sm q-mb-sm">
                   <div class="col">
                     <div class="text-subtitle2">{{ td.title }}</div>
-                    <div class="text-caption">{{ renderContent(td.description || '') }}</div>
+                    <div class="text-caption" v-html="renderContent(td.description || '')"></div>
                   </div>
                   <div class="col-auto">
                     <q-checkbox v-model="todoStates[td.id]" label="完成" />
